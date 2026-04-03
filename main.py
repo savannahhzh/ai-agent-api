@@ -48,7 +48,17 @@ class ChatSession:
         self.messages: list[ChatCompletionMessageParam] = [
             ChatCompletionSystemMessageParam(
                 role="system",
-                content="你是一个有用的AI助手，能够调用工具回答问题。"
+                content="""你是一个具备推理能力的 AI Agent。
+                请严格按照 ReAct 模式思考：
+                1. 先想：用户要什么？我是否需要调用工具？
+                2. 如果需要工具，严格调用给定函数，不要瞎编。
+                3. 拿到工具结果后，再自然回答用户。
+
+                可用工具：
+                - get_current_time：获取当前时间
+                - calculate：加减乘除计算
+                - get_weather：查询城市天气
+                """
             )
         ]
 
@@ -123,9 +133,28 @@ def calculate(a: float, b: float, op: str):
         return a / b if b != 0 else "除数不能为0"
     return "不支持的操作"
 
+# 模拟天气查询（真实使用可替换为和风天气、高德天气API）
+def get_weather(city: str):
+    """
+    查询指定城市的天气
+    """
+    # 这里先用模拟数据，后面可以换成真实接口
+    weather_data = {
+        "北京": "晴，15~26℃，微风",
+        "上海": "多云，20~28℃，湿度65%",
+        "广州": "小雨，24~30℃，南风3级",
+        "深圳": "雷阵雨，25~31℃",
+        "杭州": "阴，21~27℃",
+        "成都": "雾，16~22℃",
+        "重庆": "晴，22~30℃",
+        "武汉": "多云，19~27℃",
+    }
+    return weather_data.get(city, f"暂无城市【{city}】的天气信息")
+
 tool_map = {
     "get_current_time": get_current_time,
-    "calculate": calculate
+    "calculate": calculate,
+    "get_weather": get_weather
 }
 
 tools = [
@@ -150,6 +179,23 @@ tools = [
                     "op": {"type": "string", "enum": ["add", "sub", "mul", "div"]}
                 },
                 "required": ["a", "b", "op"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "查询某个城市的实时天气",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "description": "城市名称，例如：北京、上海"
+                    }
+                },
+                "required": ["city"]
             }
         }
     }
