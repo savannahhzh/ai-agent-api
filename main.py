@@ -48,16 +48,22 @@ class ChatSession:
         self.messages: list[ChatCompletionMessageParam] = [
             ChatCompletionSystemMessageParam(
                 role="system",
-                content="""你是一个具备推理能力的 AI Agent。
-                请严格按照 ReAct 模式思考：
-                1. 先想：用户要什么？我是否需要调用工具？
-                2. 如果需要工具，严格调用给定函数，不要瞎编。
-                3. 拿到工具结果后，再自然回答用户。
+                content="""
+                你是一个 AI Agent，必须按照 ReAct 模式工作：
 
+                1. 思考：用户的问题需要什么信息？是否需要调用工具？
+                2. 决策：
+                   - 需要数据 → 调用工具
+                   - 不需要 → 直接回答
+                3. 执行：严格按函数格式调用，不乱编参数
+                4. 回答：根据工具返回结果，自然、简洁回复用户
+                
                 可用工具：
                 - get_current_time：获取当前时间
-                - calculate：加减乘除计算
+                - calculate：加减乘除计算 a, b, op (add/sub/mul/div)
                 - get_weather：查询城市天气
+                
+                如果问题不需要工具，请直接回答，不要调用任何函数。
                 """
             )
         ]
